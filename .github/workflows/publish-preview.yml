@@ -6,7 +6,6 @@ on:
       lane_marker:
         description: Lane marker for this preview; leave empty to remove it
         required: false
-        default: 4fwe-j2xt
         type: string
 
 permissions:
