@@ -1,0 +1,88 @@
+name: Publish digest preview
+
+on:
+  workflow_dispatch:
+    inputs:
+      lane_marker:
+        description: Lane marker for this preview; leave empty to remove it
+        required: false
+        default: 4fwe-j2xt
+        type: string
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.23.0
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Check the app
+        run: |
+          pnpm typecheck
+          pnpm test
+
+      - name: Render the digest page
+        env:
+          LANE_MARKER: ${{ inputs.lane_marker }}
+        run: |
+          mkdir -p site
+          {
+            printf 'LANE_ID=lane-07\n'
+            printf 'PORT=8787\n'
+            if [ -n "$LANE_MARKER" ]; then
+              printf 'LANE_MARKER=%s\n' "$LANE_MARKER"
+            fi
+          } > .env
+
+          pnpm start > /tmp/rig.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8787/digest/2026-10-28 -o site/index.html; then
+              break
+            fi
+            sleep 1
+          done
+          test -s site/index.html
+
+          if [ -n "$LANE_MARKER" ]; then
+            grep -Fq "$LANE_MARKER" site/index.html
+          else
+            grep -Fq 'no marker set' site/index.html
+          fi
+
+      - name: Upload the page artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
