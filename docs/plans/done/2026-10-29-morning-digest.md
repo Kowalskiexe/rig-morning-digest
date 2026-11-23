@@ -90,4 +90,4 @@ Done when: the preview link no longer shows the lane marker.
 | 5 | [Digest page](https://github.com/Kowalskiexe/rig-morning-digest/issues/5) | #1 | Closed |
 | 6 | [Digest JSON endpoint](https://github.com/Kowalskiexe/rig-morning-digest/issues/6) | #1 | Closed |
 | 7 | [Public digest preview for review](https://github.com/Kowalskiexe/rig-morning-digest/issues/7) | #2, #3, #4, #5, #6 | Closed |
-| 8 | [Remove lane marker and finish plan](https://github.com/Kowalskiexe/rig-morning-digest/issues/8) | #7 and reviewer approval | In progress |
+| 8 | [Remove lane marker and finish plan](https://github.com/Kowalskiexe/rig-morning-digest/issues/8) | #7 and reviewer approval | Closed |
